@@ -4,18 +4,14 @@ import 'package:intl/intl.dart';
 import '../../../model/ride/locations.dart';
 import '../../../model/ride_pref/ride_pref.dart';
 import '../../../theme/theme.dart';
+import '../../../widgets/inputs/location_picker.dart';
 
-///
-/// A Ride Preference From is a view to select:
-///   - A depcarture location
+/// A Ride Preference Form to select:
+///   - A departure location
 ///   - An arrival location
 ///   - A date
 ///   - A number of seats
-///
-/// The form can be created with an existing RidePref (optional).
-///
 class RidePrefForm extends StatefulWidget {
-  // The form can be created with an optional initial RidePref.
   final RidePref? initRidePref;
 
   const RidePrefForm({super.key, this.initRidePref});
@@ -25,24 +21,16 @@ class RidePrefForm extends StatefulWidget {
 }
 
 class _RidePrefFormState extends State<RidePrefForm> {
-  // Location? departure;
-  // Location? arrival;
   Location departure =
       const Location(name: 'Toulouse', country: Country.france);
   DateTime departureDate = DateTime.now();
-  Location arrival = const Location(
-      name: 'Bordeaux', country: Country.france); // Adjust as necessary
-  //late int requestedSeats = 1;
+  Location arrival = const Location(name: 'Bordeaux', country: Country.france);
   int requestedSeats = 1; // Default to 1 seat
-  // ----------------------------------
-  // Initialize the Form attributes
-  // ----------------------------------
 
   @override
   void initState() {
     super.initState();
-    // TODO
-
+    // Initialize with provided RidePref if available
     if (widget.initRidePref != null) {
       departure = widget.initRidePref!.departure;
       arrival = widget.initRidePref!.arrival;
@@ -51,17 +39,41 @@ class _RidePrefFormState extends State<RidePrefForm> {
     }
   }
 
-  // ----------------------------------
-  // Handle events
-  // ----------------------------------
-  void _selectDeparture() async {
-    // Logic to select departure location
+  // Select Departure Location
+  void _selectDeparture() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return BlaLocationPicker(
+          initLocation: departure,
+          onLocationSelected: (selectedLocation) {
+            setState(() {
+              departure = selectedLocation ?? departure; // Use previous if null
+            });
+          },
+        );
+      },
+    );
   }
 
-  void _selectArrival() async {
-    // Logic to select arrival location
+  // Select Arrival Location
+  void _selectArrival() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return BlaLocationPicker(
+          initLocation: arrival,
+          onLocationSelected: (selectedLocation) {
+            setState(() {
+              arrival = selectedLocation ?? arrival; // Use previous if null
+            });
+          },
+        );
+      },
+    );
   }
 
+  // Select Departure Date
   void _selectDate() async {
     DateTime? pickedDate = await showDatePicker(
       context: context,
@@ -76,8 +88,8 @@ class _RidePrefFormState extends State<RidePrefForm> {
     }
   }
 
+  // Show Seats Dialog
   void _showSeatsDialog() {
-    // Store the current value of requestedSeats in a local variable
     int tempSeats = requestedSeats;
     showDialog(
       context: context,
@@ -147,7 +159,7 @@ class _RidePrefFormState extends State<RidePrefForm> {
     );
   }
 
-// Swap departure and arrival locations
+  // Swap departure and arrival locations
   void _swapLocations() {
     setState(() {
       final temp = departure;
@@ -156,13 +168,7 @@ class _RidePrefFormState extends State<RidePrefForm> {
     });
   }
 
-  // ----------------------------------
-  // Compute the widgets rendering
-  // ----------------------------------
-
-  // ----------------------------------
   // Build the widgets
-  // ----------------------------------
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -197,11 +203,14 @@ class _RidePrefFormState extends State<RidePrefForm> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      departure.name,
-                      style: BlaTextStyles.label,
+                    Row(
+                      children: [
+                        Icon(Icons.location_on, color: BlaColors.primary),
+                        SizedBox(width: 8),
+                        Text(departure.name,
+                            style: BlaTextStyles.label), // Display Departure
+                      ],
                     ),
-                    // Swap Icon
                     IconButton(
                       icon: Icon(Icons.swap_vert, color: BlaColors.primary),
                       onPressed: _swapLocations,
@@ -222,15 +231,17 @@ class _RidePrefFormState extends State<RidePrefForm> {
                     bottom: BorderSide(color: BlaColors.greyLight),
                   ),
                 ),
-                child: Text(
-                  arrival.name,
-                  style: BlaTextStyles.label,
+                child: Row(
+                  children: [
+                    Icon(Icons.location_on, color: BlaColors.primary),
+                    SizedBox(width: 8),
+                    Text(arrival.name,
+                        style: BlaTextStyles.label), // Display Arrival
+                  ],
                 ),
               ),
             ),
-
             const SizedBox(height: BlaSpacings.s),
-
             // Date Picker
             GestureDetector(
               onTap: _selectDate,
@@ -241,14 +252,17 @@ class _RidePrefFormState extends State<RidePrefForm> {
                     bottom: BorderSide(color: BlaColors.greyLight),
                   ),
                 ),
-                child: Text(
-                  DateFormat('EEE d MMM').format(departureDate),
-                  style: BlaTextStyles.label,
+                child: Row(
+                  children: [
+                    Icon(Icons.calendar_today, color: BlaColors.primary),
+                    SizedBox(width: 8),
+                    Text(DateFormat('EEE d MMM').format(departureDate),
+                        style: BlaTextStyles.label), // Display Date
+                  ],
                 ),
               ),
             ),
             const SizedBox(height: BlaSpacings.s),
-
             // Number of Seats Button
             GestureDetector(
               onTap: _showSeatsDialog,
@@ -259,21 +273,24 @@ class _RidePrefFormState extends State<RidePrefForm> {
                     bottom: BorderSide(color: BlaColors.greyLight),
                   ),
                 ),
-                child: Text(
-                  'Number of seats: $requestedSeats',
-                  style: BlaTextStyles.label,
+                child: Row(
+                  children: [
+                    Icon(Icons.event_seat, color: BlaColors.primary),
+                    SizedBox(width: 8),
+                    Text('Number of seats: $requestedSeats',
+                        style: BlaTextStyles.label), // Display Seats
+                  ],
                 ),
               ),
             ),
             const SizedBox(height: BlaSpacings.s),
-
             // Submit Button
             Container(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
                   print(
-                      'Searching rides from ${departure?.name} to ${arrival?.name} on ${departureDate.toLocal()} with $requestedSeats passengers.');
+                      'Searching rides from ${departure.name} to ${arrival.name} on ${departureDate.toLocal()} with $requestedSeats passengers.');
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: BlaColors.primary,
