@@ -38,8 +38,8 @@ class BlaButton extends StatelessWidget {
                 if (icon != null) Icon(icon, size: 20, color: BlaColors.white),
                 SizedBox(width: icon != null ? BlaSpacings.s : 0),
                 Text(label,
-                    style: BlaTextStyles.button
-                        .copyWith(fontFamily: 'Eesti', color: BlaColors.white)),
+                    style:
+                        BlaTextStyles.button.copyWith(color: BlaColors.white)),
               ],
             ),
     );
